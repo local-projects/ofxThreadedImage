@@ -252,15 +252,20 @@ void ofxThreadedImage::update(){
 	}
 }
 
-
-void ofxThreadedImage::draw(float _x, float _y, bool fadeInOnDelayedLoad){
-	ofxThreadedImage::draw(_x, _y, getPixelsRef().getWidth(), getPixelsRef().getHeight(), fadeInOnDelayedLoad );
+void ofxThreadedImage::draw(float x, float y, bool fadeInOnDelayedLoad){
+	ofxThreadedImage::draw(x, y, 0, getPixelsRef().getWidth(), getPixelsRef().getHeight(), fadeInOnDelayedLoad);
 }
 
+void ofxThreadedImage::draw(float x, float y, float z, bool fadeInOnDelayedLoad){
+	ofxThreadedImage::draw(x, y, z, getPixelsRef().getWidth(), getPixelsRef().getHeight(), fadeInOnDelayedLoad);
+}
 
-void ofxThreadedImage::draw(float _x, float _y, float _w, float _h, bool fadeInOnLoad){
+void ofxThreadedImage::draw(float x, float y, float w, float h, bool fadeInOnDelayedLoad){
+    ofxThreadedImage::draw(x, y, 0, w, h, fadeInOnDelayedLoad);
+}
 
-	if (imageLoaded && fadeInOnLoad && alpha < 1.0f){
+void ofxThreadedImage::draw(float x, float y, float z, float w, float h, bool fadeInOnDelayedLoad){
+	if (imageLoaded && fadeInOnDelayedLoad && alpha < 1.0f){
 		if (whatToDo == LOAD_HTTP || whatToDo == LOAD){
 			alpha += alphaRiseSpeed;
 			if(alpha > 1.0) alpha = 1.0;
@@ -268,12 +273,12 @@ void ofxThreadedImage::draw(float _x, float _y, float _w, float _h, bool fadeInO
 
 		ofPushStyle();
 			ofSetColor(255,255,255, 255 * alpha);
-			ofImage::draw(_x, _y, _w, _h);
+			ofImage::draw(x, y, z, w, h);
         ofPopStyle();
 
 	}else{
 		if(tex.bAllocated()){
-			ofImage::draw(_x, _y, _w, _h);
+			ofImage::draw(x, y, z, w, h);
 		}
 	}
 }

@@ -100,9 +100,10 @@ class ofxThreadedImage : public ofThread, public ofImage {
 		bool arePixelsAvailable();
 
 		//wrappers for ofImage draw, so that we can load the pixels to GL before drawing if necessary
-		void draw(float _x, float _y, bool fadeInOnDelayedLoad = true);
-		void draw(float _x, float _y, float _w, float _h, bool fadeInOnDelayedLoad = true);
-
+		void draw(float x, float y, bool fadeInOnDelayedLoad = true);
+        void draw(float x, float y, float z, bool fadeInOnDelayedLoad = true);
+        void draw(float x, float y, float w, float h, bool fadeInOnDelayedLoad = true);
+        void draw(float x, float y, float z, float w, float h, bool fadeInOnDelayedLoad = true);
 		void update(); //this is only needed if you want notifications when the img is loaded
 		bool isReadyToDraw();
 
