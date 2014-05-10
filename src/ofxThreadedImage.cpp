@@ -283,3 +283,33 @@ void ofxThreadedImage::draw(float x, float y, float z, float w, float h, bool fa
 	}
 }
 
+void ofxThreadedImage::drawSubsection(float x, float y, float w, float h, float sx, float sy, bool fadeInOnDelayedLoad){
+    ofxThreadedImage::drawSubsection(x, y, 0, w, h, sx, sy, w, h, fadeInOnDelayedLoad);
+}
+
+void ofxThreadedImage::drawSubsection(float x, float y, float z, float w, float h, float sx, float sy, bool fadeInOnDelayedLoad){
+    ofxThreadedImage::drawSubsection(x, y, z, w, h, sx, sy, w, h, fadeInOnDelayedLoad);
+}
+
+void ofxThreadedImage::drawSubsection(float x, float y, float w, float h, float sx, float sy, float sw, float sh, bool fadeInOnDelayedLoad){
+    ofxThreadedImage::drawSubsection(x, y, 0, w, h, sx, sy, sw, sh, fadeInOnDelayedLoad);
+}
+
+void ofxThreadedImage::drawSubsection(float x, float y, float z, float w, float h, float sx, float sy, float sw, float sh, bool fadeInOnDelayedLoad){
+    if (imageLoaded && fadeInOnDelayedLoad && alpha < 1.0f){
+		if (whatToDo == LOAD_HTTP || whatToDo == LOAD){
+			alpha += alphaRiseSpeed;
+			if(alpha > 1.0) alpha = 1.0;
+		}
+        
+		ofPushStyle();
+        ofSetColor(255,255,255, 255 * alpha);
+        ofImage::drawSubsection(x, y, z, w, h, sx, sy, sw, sh);
+        ofPopStyle();
+        
+	}else{
+		if(tex.bAllocated()){
+			ofImage::drawSubsection(x, y, z, w, h, sx, sy, sw, sh);
+		}
+	}
+}

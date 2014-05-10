@@ -104,6 +104,12 @@ class ofxThreadedImage : public ofThread, public ofImage {
         void draw(float x, float y, float z, bool fadeInOnDelayedLoad = true);
         void draw(float x, float y, float w, float h, bool fadeInOnDelayedLoad = true);
         void draw(float x, float y, float z, float w, float h, bool fadeInOnDelayedLoad = true);
+    
+        void drawSubsection(float x, float y, float w, float h, float sx, float sy, bool fadeInOnDelayedLoad = true);
+        void drawSubsection(float x, float y, float z, float w, float h, float sx, float sy, bool fadeInOnDelayedLoad = true);
+        void drawSubsection(float x, float y, float w, float h, float sx, float sy, float sw, float sh, bool fadeInOnDelayedLoad = true);
+        void drawSubsection(float x, float y, float z, float w, float h, float sx, float sy, float sw, float sh, bool fadeInOnDelayedLoad = true);
+    
 		void update(); //this is only needed if you want notifications when the img is loaded
 		bool isReadyToDraw();
 
