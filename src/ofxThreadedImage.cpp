@@ -126,7 +126,7 @@ void ofxThreadedImage::loadImageThreaded(string fileName_){
 	fileName = fileName_;
 	readyToDraw = false;
 	problemLoading = false;
-	startThread(true, false);
+	startThread(true);
 }
 
 
@@ -192,7 +192,7 @@ void ofxThreadedImage::loadHttpImageThreaded(string url_){
 	problemLoading = false;
 	readyToDraw = false;
 	setUseTexture(false);
-	startThread(true, false);
+	startThread(true);
 }
 
 
@@ -226,7 +226,7 @@ void ofxThreadedImage::saveThreaded(string where, ofImageQualityType quality_){
 	whatToDo = SAVE;
 	this->fileName = where;
 	this->quality = quality_;
-	startThread(false, false);   // !blocking, !verbose
+	startThread(false);
 };
 
 
@@ -283,3 +283,33 @@ void ofxThreadedImage::draw(float x, float y, float z, float w, float h, bool fa
 	}
 }
 
+void ofxThreadedImage::drawSubsection(float x, float y, float w, float h, float sx, float sy, bool fadeInOnDelayedLoad){
+    ofxThreadedImage::drawSubsection(x, y, 0, w, h, sx, sy, w, h, fadeInOnDelayedLoad);
+}
+
+void ofxThreadedImage::drawSubsection(float x, float y, float z, float w, float h, float sx, float sy, bool fadeInOnDelayedLoad){
+    ofxThreadedImage::drawSubsection(x, y, z, w, h, sx, sy, w, h, fadeInOnDelayedLoad);
+}
+
+void ofxThreadedImage::drawSubsection(float x, float y, float w, float h, float sx, float sy, float sw, float sh, bool fadeInOnDelayedLoad){
+    ofxThreadedImage::drawSubsection(x, y, 0, w, h, sx, sy, sw, sh, fadeInOnDelayedLoad);
+}
+
+void ofxThreadedImage::drawSubsection(float x, float y, float z, float w, float h, float sx, float sy, float sw, float sh, bool fadeInOnDelayedLoad){
+    if (imageLoaded && fadeInOnDelayedLoad && alpha < 1.0f){
+		if (whatToDo == LOAD_HTTP || whatToDo == LOAD){
+			alpha += alphaRiseSpeed;
+			if(alpha > 1.0) alpha = 1.0;
+		}
+        
+		ofPushStyle();
+        ofSetColor(255,255,255, 255 * alpha);
+        ofImage::drawSubsection(x, y, z, w, h, sx, sy, sw, sh);
+        ofPopStyle();
+        
+	}else{
+		if(tex.bAllocated()){
+			ofImage::drawSubsection(x, y, z, w, h, sx, sy, sw, sh);
+		}
+	}
+}
