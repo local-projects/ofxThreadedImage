@@ -15,6 +15,7 @@ ofxThreadedImage::ofxThreadedImage(){
 	readyToDraw = false;
 	problemLoading = false;
 	resizeAfterLoad = false;
+    bMipmapsEnabled = false;
 	compression = OF_COMPRESS_NONE;
 }
 
@@ -210,6 +211,7 @@ void ofxThreadedImage::updateTextureIfNeeded(){
 	if (pendingTexture){
 		if (!problemLoading){
 			setUseTexture(true);
+            bMipmapsEnabled? tex.enableMipmap():tex.disableMipmap();
 			tex.setCompression(compression);
 			tex.allocate(getPixelsRef());
 			//tex.setTextureMinMagFilter(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
@@ -229,6 +231,10 @@ void ofxThreadedImage::saveThreaded(string where, ofImageQualityType quality_){
 	startThread(false);
 };
 
+
+void ofxThreadedImage::setMipmapsEnabled(bool bEnabled){
+    bMipmapsEnabled = bEnabled;
+}
 
 void ofxThreadedImage::setTexCompression(ofTexCompression c){
 	compression = c;

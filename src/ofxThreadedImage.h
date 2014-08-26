@@ -75,6 +75,7 @@ class ofxThreadedImage : public ofThread, public ofImage {
 		ofxThreadedImage();	
 		virtual ~ofxThreadedImage();
 
+        void setMipmapsEnabled(bool bEnabled);
 		void setTexCompression(ofTexCompression c);
 	
 		//this will load the pixels only, not GL upload.
@@ -120,6 +121,7 @@ class ofxThreadedImage : public ofThread, public ofImage {
 
 	private:
 
+        bool bMipmapsEnabled;
 		ofTexCompression compression;
 		void threadedFunction();
 	void resizeIfNeeded();
