@@ -211,11 +211,20 @@ void ofxThreadedImage::updateTextureIfNeeded(){
 	if (pendingTexture){
 		if (!problemLoading){
 			setUseTexture(true);
-            bMipmapsEnabled? tex.enableMipmap():tex.disableMipmap();
+            bool bUsingArbTex = ofGetUsingArbTex();
+            if (bMipmapsEnabled) {
+                ofDisableArbTex();
+                tex.enableMipmap();
+            }
+            else {
+                tex.disableMipmap();
+            }
 			tex.setCompression(compression);
 			tex.allocate(getPixelsRef());
-			//tex.setTextureMinMagFilter(GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR);
 			ofImage::update();
+            if (bMipmapsEnabled && bUsingArbTex) {
+                ofEnableArbTex();
+            }
 			readyToDraw = true;
 			pendingTexture = false;
 		}
