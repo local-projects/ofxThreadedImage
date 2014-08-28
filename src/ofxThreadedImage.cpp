@@ -16,6 +16,7 @@ ofxThreadedImage::ofxThreadedImage(){
 	problemLoading = false;
 	resizeAfterLoad = false;
 	compression = OF_COMPRESS_NONE;
+	busy = false;
 }
 
 ofxThreadedImage::~ofxThreadedImage(){
@@ -39,7 +40,7 @@ void ofxThreadedImage::resizeIfNeeded(){
 			int newW = w * scale;
 			int newH = h * scale;
 			#if USE_OPENCV_TO_RESIZE
-			if (type == OF_IMAGE_COLOR){
+			if (type == OF_IMAGE_COLOR){ //TODO cover rgba!
 				ofxCvColorImage cvImg;
 				cvImg.setUseTexture(false);
 				cvImg.allocate(w, h);
@@ -50,10 +51,10 @@ void ofxThreadedImage::resizeIfNeeded(){
 				cvImgsmall.scaleIntoMe(cvImg, CV_INTER_AREA);
 				setFromPixels(cvImgsmall.getPixels(), newW, newH, OF_IMAGE_COLOR);
 			}else{
-				resize(newW, newH); //TODO opencv resizing is much faster!
+				resize(newW, newH);
 			}
 			#else
-			resize(newW, newH); //TODO opencv resizing is much faster!
+			resize(newW, newH); //opencv resizing is much faster!
 			#endif
 			//ofLog() << "time resize: " + ofToString( ofGetElapsedTimef() - t1 );
 		}
@@ -67,9 +68,7 @@ void ofxThreadedImage::constrainImageSize(int largestSide){
 
 void ofxThreadedImage::threadedFunction(){
 
-	#ifdef TARGET_OSX
-	pthread_setname_np("ofxThreadedImage");
-	#endif
+	ofThread::getPocoThread().setName("ofxThreadedImage");
 
 	if( lock() ){
 
@@ -110,27 +109,37 @@ void ofxThreadedImage::threadedFunction(){
 	} else {
 		ofLogError("ofxThreadedImage::threadedFunction Can't %s %s, thread is already running", whatToDo == SAVE ? "Save" : "Load",  fileName.c_str() );
 	}
-	
 	stopThread();
 
-	#if  defined(TARGET_OSX) || defined(TARGET_LINUX) /*I'm not 100% sure of linux*/
-	pthread_detach( pthread_self() ); //this is a workaround for this issue https://github.com/openframeworks/openFrameworks/issues/2506
-	#endif
+	//fixed in OF 0.8.3
+//	#if  defined(TARGET_OSX) || defined(TARGET_LINUX) /*I'm not 100% sure of linux*/
+//	pthread_detach( pthread_self() ); //this is a workaround for this issue https://github.com/openframeworks/openFrameworks/issues/2506
+//	#endif
 
 }
 
 
-void ofxThreadedImage::loadImageThreaded(string fileName_){
-	alpha = 0.0;
-	whatToDo = LOAD;
-	fileName = fileName_;
-	readyToDraw = false;
-	problemLoading = false;
-	startThread(true, false);
+bool ofxThreadedImage::loadImageThreaded(string fileName_){
+
+	if(!busy){
+		busy = true;
+		ofAddListener(ofEvents().update, this, &ofxThreadedImage::_update);
+		alpha = 0.0;
+		whatToDo = LOAD;
+		fileName = fileName_;
+		readyToDraw = false;
+		problemLoading = false;
+		startThread(true);
+		return true;
+	}else{
+		return false;
+	}
 }
 
 
-void ofxThreadedImage::loadImageBlocking(string fileName){
+bool ofxThreadedImage::loadImageBlocking(string fileName){
+
+	ofAddListener(ofEvents().update, this, &ofxThreadedImage::_update);
 	imageLoaded = false;
 	whatToDo = LOAD;
 	problemLoading = false;
@@ -145,54 +154,64 @@ void ofxThreadedImage::loadImageBlocking(string fileName){
 		imageLoaded = true;
 	}
 	pendingTexture = true;
+	return loaded;
 }
 
 
 bool ofxThreadedImage::loadHttpImageBlocking(string url_){
-	alpha = 0;
-	whatToDo = LOAD_HTTP;
-	url = url_;
-	readyToDraw = false;
-	problemLoading = false;
-	setUseTexture(false);
-	ofxSimpleHttp http;
-	http.setTimeOut(timeOut);
-	ofxSimpleHttpResponse response = http.fetchURLBlocking(url);
-	if (response.ok){
-		ofDirectory dir;
-		dir.open(ofToDataPath(IMG_DOWNLOAD_FOLDER_NAME, false));
-		if ( !dir.exists()){
-			dir.create();
+	if(!busy){
+		ofAddListener(ofEvents().update, this, &ofxThreadedImage::_update);
+		alpha = 0;
+		whatToDo = LOAD_HTTP;
+		url = url_;
+		readyToDraw = false;
+		problemLoading = false;
+		setUseTexture(false);
+		ofxSimpleHttp http;
+		http.setTimeOut(timeOut);
+		ofxSimpleHttpResponse response = http.fetchURLBlocking(url);
+		if (response.ok){
+			ofDirectory dir;
+			dir.open(ofToDataPath(IMG_DOWNLOAD_FOLDER_NAME, false));
+			if ( !dir.exists()){
+				dir.create();
+			}
+			string filePath = ofToDataPath( (string)IMG_DOWNLOAD_FOLDER_NAME + "/" + response.fileName, false );
+			FILE * file = fopen( filePath.c_str(), "wb");
+			fwrite (response.responseBody.c_str() , 1 , response.responseBody.length() , file );
+			fclose( file);
+		}else{
+			ofLog(OF_LOG_ERROR, "loadHttpImageBlocking() failed (%d) > %s\n", response.status, url.c_str() );
+			return false;
 		}
-		string filePath = ofToDataPath( (string)IMG_DOWNLOAD_FOLDER_NAME + "/" + response.fileName, false );
-		FILE * file = fopen( filePath.c_str(), "wb");
-		fwrite (response.responseBody.c_str() , 1 , response.responseBody.length() , file );
-		fclose( file);
-	}else{
-		ofLog(OF_LOG_ERROR, "loadHttpImageBlocking() failed (%d) > %s\n", response.status, url.c_str() );
-		return false;
-	}
-	imageLoaded = false;
-	bool ok = loadImage((string)IMG_DOWNLOAD_FOLDER_NAME + "/" + response.fileName);
-	if(ok){
-		resizeIfNeeded();
-		imageLoaded = true;
-	}
-	pendingTexture = true;
-	return ok;
+		imageLoaded = false;
+		bool ok = loadImage((string)IMG_DOWNLOAD_FOLDER_NAME + "/" + response.fileName);
+		if(ok){
+			resizeIfNeeded();
+			imageLoaded = true;
+		}
+		pendingTexture = true;
+		return ok;
+	}return false;
 }
 
 
-void ofxThreadedImage::loadHttpImageThreaded(string url_){
-	alpha = 0;
-	whatToDo = LOAD_HTTP;
-	url = url_;
-	pendingTexture = true;
-	imageLoaded = false;
-	problemLoading = false;
-	readyToDraw = false;
-	setUseTexture(false);
-	startThread(true, false);
+bool ofxThreadedImage::loadHttpImageThreaded(string url_){
+	if(!busy){
+		ofAddListener(ofEvents().update, this, &ofxThreadedImage::_update);
+		alpha = 0;
+		whatToDo = LOAD_HTTP;
+		url = url_;
+		pendingTexture = true;
+		imageLoaded = false;
+		problemLoading = false;
+		readyToDraw = false;
+		setUseTexture(false);
+		startThread(true);
+		return true;
+	}else{
+		return false;
+	}
 }
 
 
@@ -222,11 +241,14 @@ void ofxThreadedImage::updateTextureIfNeeded(){
 }
 
 
-void ofxThreadedImage::saveThreaded(string where, ofImageQualityType quality_){
-	whatToDo = SAVE;
-	this->fileName = where;
-	this->quality = quality_;
-	startThread(false, false);   // !blocking, !verbose
+bool ofxThreadedImage::saveThreaded(string where, ofImageQualityType quality_){
+	if(!busy){
+		whatToDo = SAVE;
+		this->fileName = where;
+		this->quality = quality_;
+		startThread(false);   // !blocking
+		return true;
+	} return false;
 };
 
 
@@ -234,7 +256,7 @@ void ofxThreadedImage::setTexCompression(ofTexCompression c){
 	compression = c;
 }
 
-void ofxThreadedImage::update(){
+void ofxThreadedImage::_update(ofEventArgs &e){
 
 	if(imageLoaded){
 		updateTextureIfNeeded();
@@ -249,6 +271,8 @@ void ofxThreadedImage::update(){
 		}
 		ofNotifyEvent( imageReadyEvent, event, this );
 		pendingNotification = false;
+		ofRemoveListener(ofEvents().update, this, &ofxThreadedImage::_update);
+		busy = false;
 	}
 }
 

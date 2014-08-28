@@ -8,7 +8,7 @@ void testApp::setup(){
 
 void testApp::update(){
  
-    img.update();
+	//img.update();
 }
 
 void testApp::draw(){
@@ -37,8 +37,14 @@ void testApp::draw(){
 								);
 
 	img.constrainImageSize(200); //this will make any image loaded fit in this size!
+
+	ofAddListener(img.imageReadyEvent, this, &testApp::imageLoaded);
 }
 
+void testApp::imageLoaded(ofxThreadedImageEvent &e){
+
+	cout << "loaded " << e.image << endl;
+}
 
 void testApp::keyPressed(int key){
 

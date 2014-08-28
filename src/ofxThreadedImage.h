@@ -79,18 +79,19 @@ class ofxThreadedImage : public ofThread, public ofImage {
 	
 		//this will load the pixels only, not GL upload.
 		//Will also store a flag so that when u try to draw first, it's uploaded to GL on demand (on main thread)
-		void loadImageBlocking(string fileName);
-		void loadImageThreaded(string fileName);
+		bool loadImageBlocking(string fileName);
+		bool loadImageThreaded(string fileName);
 
 		void constrainImageSize(int largestSide); //if the loaded image turns out to be larger than this
 	//(bigger side), then we shrink it down to fit this new size (for the largest side)
 
 		bool loadHttpImageBlocking(string url);
-		void loadHttpImageThreaded(string url);
+		bool loadHttpImageThreaded(string url);
+
 		void setHttpRequestTimeOut(float t){ timeOut = t;}
 
 		//save file as jpeg with custom quality (regardless of file extension!)
-		void saveThreaded(string where, ofImageQualityType qualityLevel);
+		bool saveThreaded(string where, ofImageQualityType qualityLevel);
 
 		//call this method before draw, only in case you draw through the textureReference.
 		//If you call ofxThreadedImage::draw(), there's no need to use this
@@ -103,7 +104,6 @@ class ofxThreadedImage : public ofThread, public ofImage {
 		void draw(float _x, float _y, bool fadeInOnDelayedLoad = true);
 		void draw(float _x, float _y, float _w, float _h, bool fadeInOnDelayedLoad = true);
 
-		void update(); //this is only needed if you want notifications when the img is loaded
 		bool isReadyToDraw();
 
 		/*per frame alpha increment [0..1]*/
@@ -113,19 +113,23 @@ class ofxThreadedImage : public ofThread, public ofImage {
 
 	private:
 
-		ofTexCompression compression;
-		void threadedFunction();
-	void resizeIfNeeded();
+		void 					_update(ofEventArgs &e);
 
-		float timeOut;
-		bool pendingNotification;
-		float alpha;
-		float alphaRiseSpeed;
-		bool imageLoaded;		//pixels are ready
-		bool readyToDraw;	//tex is ready
-		bool problemLoading;
 
-	bool resizeAfterLoad;
-	int maxSideSize; //if resize, constrain into this side for the largest side
+		ofTexCompression 		compression;
+		void 					threadedFunction();
+		void 					resizeIfNeeded();
+
+		float 					timeOut;
+		bool 					pendingNotification;
+		float 					alpha;
+		float 					alphaRiseSpeed;
+		bool 					imageLoaded;	//pixels are ready
+		bool 					readyToDraw;	//tex is ready
+		bool 					problemLoading;
+
+		bool 					resizeAfterLoad;
+		int 					maxSideSize; //if resize, constrain into this side for the largest side
+		bool 					busy;
 };
 

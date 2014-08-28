@@ -14,4 +14,6 @@ class testApp : public ofBaseApp{
 		void keyPressed(int key);
 
 		ofxThreadedImage img;
+
+		void imageLoaded(ofxThreadedImageEvent &e);
 };
