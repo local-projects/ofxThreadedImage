@@ -113,6 +113,7 @@ class ofxThreadedImage : public ofThread, public ofImage {
     
 		void update(); //this is only needed if you want notifications when the img is loaded
 		bool isReadyToDraw();
+        bool hasProblemLoading();
 
 		/*per frame alpha increment [0..1]*/
 		void setFadeInSpeed(float alphaRiseSpeed_){ alphaRiseSpeed = alphaRiseSpeed_; }

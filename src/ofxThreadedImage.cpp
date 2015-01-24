@@ -206,6 +206,9 @@ bool ofxThreadedImage::arePixelsAvailable(){
 	return imageLoaded;
 }
 
+bool ofxThreadedImage::hasProblemLoading(){
+    return problemLoading;
+}
 
 void ofxThreadedImage::updateTextureIfNeeded(){
 	if (pendingTexture){
