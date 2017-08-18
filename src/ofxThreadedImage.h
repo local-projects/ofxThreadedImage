@@ -111,6 +111,9 @@ class ofxThreadedImage : public ofThread, public ofImage {
 
 		ofEvent<ofxThreadedImageEvent>		imageReadyEvent;
 
+		static int getNumAlive(){return numAlive;}
+		static int getNumLoading(){return numLoading;}
+
 	private:
 
 		void 					_update(ofEventArgs &e);
@@ -131,5 +134,8 @@ class ofxThreadedImage : public ofThread, public ofImage {
 		bool 					resizeAfterLoad;
 		int 					maxSideSize; //if resize, constrain into this side for the largest side
 		bool 					busy;
+
+	static int					numLoading;
+	static int					numAlive;
 };
 

@@ -5,6 +5,9 @@
 #endif
 
 
+int ofxThreadedImage::numAlive = 0;
+int ofxThreadedImage::numLoading = 0;
+
 ofxThreadedImage::ofxThreadedImage(){
 	pendingTexture = false;
 	timeOut = 10;
@@ -17,6 +20,7 @@ ofxThreadedImage::ofxThreadedImage(){
 	resizeAfterLoad = false;
 	compression = OF_COMPRESS_NONE;
 	busy = false;
+	numAlive++;
 }
 
 ofxThreadedImage::~ofxThreadedImage(){
@@ -27,6 +31,7 @@ ofxThreadedImage::~ofxThreadedImage(){
 			ofLogError("ofxThreadedImage", "Exception at waitForThread %s\n", ex.displayText().c_str() );
 		}
 	}
+	numAlive--;
 }
 
 void ofxThreadedImage::resizeIfNeeded(){
@@ -68,6 +73,7 @@ void ofxThreadedImage::constrainImageSize(int largestSide){
 
 void ofxThreadedImage::threadedFunction(){
 
+	numLoading++;
 	ofThread::getPocoThread().setName("ofxThreadedImage");
 
 	if( lock() ){
@@ -110,6 +116,7 @@ void ofxThreadedImage::threadedFunction(){
 		ofLogError("ofxThreadedImage::threadedFunction Can't %s %s, thread is already running", whatToDo == SAVE ? "Save" : "Load",  fileName.c_str() );
 	}
 	stopThread();
+	numLoading--;
 
 	//fixed in OF 0.8.3
 //	#if  defined(TARGET_OSX) || defined(TARGET_LINUX) /*I'm not 100% sure of linux*/
