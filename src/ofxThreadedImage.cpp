@@ -154,8 +154,9 @@ bool ofxThreadedImage::loadImageBlocking(string fileName){
 	alpha = 0.0;
 	bool loaded = loadImage(fileName);
 	if (!loaded){
-		ofLogError() << "ofxThreadedImage:: img couldnt load!" << endl;
+		ofLogError() << "ofxThreadedImage:: img couldnt load! \"" << fileName << "\"" << endl;
 		problemLoading = true;
+		pendingNotification = true;
 	}else{
 		resizeIfNeeded();
 		imageLoaded = true;
