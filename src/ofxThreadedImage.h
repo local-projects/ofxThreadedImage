@@ -75,6 +75,8 @@ class ofxThreadedImage : public ofThread, public ofImage {
 		ofxThreadedImage();	
 		virtual ~ofxThreadedImage();
 
+		void update(); //you must manually call update every frame!
+
 		void setTexCompression(ofTexCompression c);
 	
 		//this will load the pixels only, not GL upload.
@@ -116,7 +118,6 @@ class ofxThreadedImage : public ofThread, public ofImage {
 
 	private:
 
-		void 					_update(ofEventArgs &e);
 
 
 		ofTexCompression 		compression;

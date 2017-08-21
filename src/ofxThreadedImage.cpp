@@ -130,7 +130,6 @@ bool ofxThreadedImage::loadImageThreaded(string fileName_){
 
 	if(!busy){
 		busy = true;
-		ofAddListener(ofEvents().update, this, &ofxThreadedImage::_update);
 		alpha = 0.0;
 		whatToDo = LOAD;
 		fileName = fileName_;
@@ -146,7 +145,6 @@ bool ofxThreadedImage::loadImageThreaded(string fileName_){
 
 bool ofxThreadedImage::loadImageBlocking(string fileName){
 
-	ofAddListener(ofEvents().update, this, &ofxThreadedImage::_update);
 	imageLoaded = false;
 	whatToDo = LOAD;
 	problemLoading = false;
@@ -168,7 +166,6 @@ bool ofxThreadedImage::loadImageBlocking(string fileName){
 
 bool ofxThreadedImage::loadHttpImageBlocking(string url_){
 	if(!busy){
-		ofAddListener(ofEvents().update, this, &ofxThreadedImage::_update);
 		alpha = 0;
 		whatToDo = LOAD_HTTP;
 		url = url_;
@@ -206,7 +203,6 @@ bool ofxThreadedImage::loadHttpImageBlocking(string url_){
 
 bool ofxThreadedImage::loadHttpImageThreaded(string url_){
 	if(!busy){
-		ofAddListener(ofEvents().update, this, &ofxThreadedImage::_update);
 		alpha = 0;
 		whatToDo = LOAD_HTTP;
 		url = url_;
@@ -264,7 +260,7 @@ void ofxThreadedImage::setTexCompression(ofTexCompression c){
 	compression = c;
 }
 
-void ofxThreadedImage::_update(ofEventArgs &e){
+void ofxThreadedImage::update(){
 
 	if(imageLoaded){
 		updateTextureIfNeeded();
@@ -279,7 +275,6 @@ void ofxThreadedImage::_update(ofEventArgs &e){
 		}
 		ofNotifyEvent( imageReadyEvent, event, this );
 		pendingNotification = false;
-		ofRemoveListener(ofEvents().update, this, &ofxThreadedImage::_update);
 		busy = false;
 	}
 }
