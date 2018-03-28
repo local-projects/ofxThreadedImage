@@ -27,8 +27,9 @@ ofxThreadedImage::~ofxThreadedImage(){
 	if (isThreadRunning()){
 		try {
 			waitForThread(true);
-		}catch(Exception &ex) {
-			ofLogError("ofxThreadedImage", "Exception at waitForThread %s\n", ex.displayText().c_str() );
+		}
+		catch (std::exception& e) {
+			ofLogError("ofxThreadedImage", "Exception at waitForThread %s\n", e.what() );
 		}
 	}
 	numAlive--;

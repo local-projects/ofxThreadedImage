@@ -1,1 +1,2 @@
 ofxThreadedImage
+ofxSimpleHttp
